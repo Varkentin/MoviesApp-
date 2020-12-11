@@ -1,4 +1,4 @@
-import IDs from "@/store/mock/imdb_top";
+import IDs from "@/store/mock/imdb_top250";
 import axios from "@/plugins/axios";
 import mutations from "@/store/mutations";
 
@@ -8,27 +8,36 @@ function serializeResponse(movies) {
     return acc;
   }, {});
 }
+
 const { MOVIES } = mutations;
-const moviesSrore ={
-	namespaced: true,
-	state:{
-		topIDs: IDs,
-		moviesPerPage:12,
-		currentPage:1,
-		movies: {}
-	},
-	getters:{
-		slicedIDs: ({topIDs}) =>(from,to) => topIDs.slice(from,to),
-		currentPage:({currentPage}) => currentPage,
-		moviesPerPage:({moviesPerPage}) => moviesPerPage
-	},
-	mutations:{
-		[MOVIES](state, value) {
+
+const moviesStore = {
+  namespaced: true,
+  state: {
+    top250IDs: IDs,
+    moviesPerPage: 12,
+    currentPage: 1,
+    movies: {}
+  },
+  getters: {
+    moviesList: ({ movies }) => movies,
+    slicedIDs: ({ top250IDs }) => (from, to) => top250IDs.slice(from, to),
+    currentPage: ({ currentPage }) => currentPage,
+    moviesPerPage: ({ moviesPerPage }) => moviesPerPage
+  },
+  mutations: {
+    [MOVIES](state, value) {
       state.movies = value;
     }
-	},
-	actions:{
-		async fetchMovies({ getters, commit }) {
+  },
+  actions: {
+    initMoviesStore: {
+      handler({ dispatch }) {
+        dispatch("fetchMovies");
+      },
+      root: true
+    },
+    async fetchMovies({ getters, commit }) {
       try {
         const { currentPage, moviesPerPage, slicedIDs } = getters;
         const from = currentPage * moviesPerPage - moviesPerPage;
@@ -39,12 +48,11 @@ const moviesSrore ={
         const response = await Promise.all(requests);
         const movies = serializeResponse(response);
         commit(MOVIES, movies);
-			} 
-			catch (err) {
+      } catch (err) {
         console.log(err);
       }
     }
-	},
+  }
 };
 
-export default moviesSrore;	
+export default moviesStore;
