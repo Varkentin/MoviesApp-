@@ -1,4 +1,5 @@
 import mutations from "@/store/mutations";
+
 const { TOGGLE_LOADER } = mutations;
 
 const loaderStore = {
